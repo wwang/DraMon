@@ -1,0 +1,28 @@
+# input file for memory access prediction model
+# the line started with t is a thread's information
+# columns are:
+# channel_acc_prob, other_thread_hit_same_bank_prob, other_thread_hit_same_row_prob, min_con_acc, min_con_noacc
+t: 0.5, 0.125, 0.0, 8, 8
+            
+# lines started with a are bank reuse distances' information
+# columns are:
+# bank_reuse_distance, bank_dist_prob, hit_prob (when single), miss_prob, conf_prob
+a: 1, 0.875, 1.0, 0.0, 0.0
+a: 8, 0.125, 0.89, 0.11, 0.0
+
+# Probabilities of consecutive target-channel accesses and 
+# non-target channel accesses. Each probability should be a fraction 
+# number. The "i"th item in the comma separated list represents the
+# probability of the "i"th access is a target-channel access when the
+# previous "i-1" accesses are also target-channel accesses. And 
+# similarly for non-target-channel accesses.
+# "ca" represents target-channel accesses, and "cn" represents non-
+# target-channel accesses.
+ca:1/2,7/8,6/7,5/6,4/5,3/4,2/3,1/2,0/1
+cn:1/2,7/8,6/7,5/6,4/5,3/4,2/3,1/2,0/1
+
+# minimum number of consecutive target-channel accesses
+mt: 8
+
+# minimum number of consecutive non-target-channel accesses
+mn: 8
