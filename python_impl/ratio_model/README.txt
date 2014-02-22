@@ -46,5 +46,6 @@ are passed in the parameter file. The file name is passed to run_model.py with
 than the paper. The extra parameters are used by version 1 of the four steps,
 you don't have to set these parameters, if you are using version 3.
 
-I have been running all my python scripts with pypy, which is faster than 
-standard python. If the scripts are slow for you, try pypy.
+This python implemenation should be fast. I have been running all my python 
+scripts with pypy, which is faster than standard python. If the scripts are 
+slow for you, try pypy.
