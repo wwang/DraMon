@@ -314,6 +314,9 @@ def physical2dram( phyaddr, nodes, cache_pci):
                     if debug is True:
                         print "Rank normalized address is", hex(rankaddr)
                     # second, lets get the DRAM address map
+                    # Note that I am only reading the DIMM slot 0 here. The 
+                    # other slots are configured at higher bits of the same
+                    # PCI register (0x80 and 0x180).
                     DramAddrMapOffset = 0x80
                     if ChannelSelect == 1:
                         DramAddrMapOffset = DramAddrMapOffset + 0x100
