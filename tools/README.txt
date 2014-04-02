@@ -7,3 +7,5 @@ This directory contains the following tools of DraMon model:
 3. An user-interface for the translation scripts" "virtual2dram.py". It works as an uniformed entrance for the translation scripts. It supports virtual to physical, physical to DRAM, and virtual to DRAM translation. It also supports translation of a large chuck of memory.
 
 4. For better performance, I recommend caching the reading of PCI configuration register (an option provided in virtual2dram.py). It will be very slow if every address translation has to do a PCI register read (which is an I/O operation with switching to kernel space...). Caching PCI register readings should be very safe, since DRAM configuration should not change after boot. For even better performance, try "pypy" instead of stock "python". If you still want more speed, try my C implementation.
+
+5. The C implementation requires some helper functions from https://github.com/wwang/common_toolx. Edit the Makefile of the C implementation to include the correct path of common_toolx
