@@ -839,7 +839,7 @@ int rank_to_bankrowcol(unsigned long long rank_addr,
 	dram_addr_map &= 0xf;
        	ctx_dprintf(debug, "DramAddrMap is %d\n", dram_addr_map);
 
-	if(dram_addr_map == 0b111){
+	if(dram_addr_map == 0b0111){
 		*bank = rank_addr>>13 & 0b111;
 		*row = (((rank_addr>>16) & 0b11) << 13) | 
 			((rank_addr>>18) & 0x1FFF);
@@ -848,6 +848,20 @@ int rank_to_bankrowcol(unsigned long long rank_addr,
 		ctx_dprintf(debug, "Rank addr 0x%012llx: bank %d, row %d, "
 			    "col %d\n", rank_addr, *bank, *row, *col);
 
+		return 0;
+	}
+	else if(dram_addr_map == 0b1010) {
+		/* bank <= address(15:13) */
+		*bank = (rank_addr >> 13) & 0b111;
+		/* row(15:14) <= address(17:16); */
+		/* row(13:0) <= address(31:18) */
+		*row = (rank_addr & ((1 << 17) | (1 << 16))) >> 2;
+		*row |= (rank_addr >> 18) & 0x3FFF;
+		/* col(9:0) <= address(12:3) */
+		*col = (rank_addr >> 3) & 0x3FF;
+
+		ctx_dprintf(debug, "Rank addr 0x%012llx: bank %d, row %d, "
+			    "col %d\n", rank_addr, *bank, *row, *col);
 		return 0;
 	}
 	else{
