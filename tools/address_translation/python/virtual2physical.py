@@ -24,10 +24,8 @@ pagemap_cache = dict()
 #     int phyaddr: translated physicall address   
 def virtual2physical(pid, vaddr, pagesize, cache_pagemap):
 
-    if pagesize == 0:
-        pagesize = resource.getpagesize()
-    else:
-        pagesize = int(options.pagesize)
+    # always get page size from system configuration
+    pagesize = resource.getpagesize()
 
     if debug is True:
         print "Translating process: ", pid, " virtual address: ", vaddr, "with pagesize: ", pagesize
@@ -53,10 +51,19 @@ def virtual2physical(pid, vaddr, pagesize, cache_pagemap):
         # Bits 0-54  page frame number (PFN) if present
         # Bits 0-4   swap type if swapped
         # Bits 5-54  swap offset if swapped
-        # Bits 55-60 page shift (page size = 1&lt;&lt;page shift)
-        # Bit  61    reserved for future use
+        # Bit  55    pte is soft-dirty (see Documentation/vm/soft-dirty.txt)
+        # Bit  56    page exclusively mapped (since 4.2)
+        # Bits 57-60 zero
+        # Bit  61    page is file-page or shared-anon (since 3.5)
         # Bit  62    page swapped
         # Bit  63    page present
+
+        # Note that originally, Bits 55-60 indicate page shift (i.e., page size)
+        # However after kernel 3.11, these bits are used for other purposes.
+        # For all machines I have, in /proc/[pid]/pagemap, page size is fixed to
+        # be 4KB (even for 2MB huge pages). There seems to be no need to keep
+        # the page shift bits.
+                                            
     
         # This is the actually offset for this page is vpageindex * 8, size each page has 64 bits or 8 bytes
         offset = vpageindex * 8
@@ -72,8 +79,13 @@ def virtual2physical(pid, vaddr, pagesize, cache_pagemap):
 
     phypagedesp_i = int(phypagedesp[::-1].encode('hex'), 16)
     phypageaddr =  phypagedesp_i & 0x7fffffffffffff
-    pageshift = phypagedesp_i >> 55 & 0x3f
     pagepresent = phypagedesp_i >> 63
+    pageshift = 0
+    pagesize2 = pagesize
+    while((pagesize2 & 0x1) == 0x0):
+        pageshift++;
+        pagesize2 >> 4
+    print "pageshift is", pageshift
 
     phyaddr = (phypageaddr << pageshift) | inpageaddr
 
