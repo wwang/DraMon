@@ -9,3 +9,9 @@ This directory contains the following tools of DraMon model:
 4. For better performance, I recommend caching the reading of PCI configuration register (an option provided in virtual2dram.py). It will be very slow if every address translation has to do a PCI register read (which is an I/O operation with switching to kernel space...). Caching PCI register readings should be very safe, since DRAM configuration should not change after boot. For even better performance, try "pypy" instead of stock "python". If you still want more speed, try my C implementation.
 
 5. The C implementation requires some helper functions from https://github.com/wwang/common_toolx. Edit the Makefile of the C implementation to include the correct path of common_toolx
+
+6. The format /proc/[pid]/pagemap has changed since kernel 3.11. The page shift bits (indicating page size) have been dropped. It seems /proc/[pid]/pagemap does not corresponds to page table any more, instead it simply translates a virtual address to a physical address (physical page number * 4KB). Each entry in "pagemap" always represents 4KB memory space. /proc/kpageflags gives the flag of physical pages, which is also always in 4KB page/frame. For a huge page, it corresponds to multiple entries in "kpageflags" and "pagemap". For example, an 2MB huge page, corresponds to consecutive 512 entries in
+"kpageflags", which the first entry has flags HUGE and COMPOUND_HEAD, and the rest entries has HUGE and COMPOUND_TAIL. The best reference to understand the format of "pagemap" and "kpageflags" are kernel document at "https://www.kernel.org/doc/Documentation/vm/pagemap.txt" and kernel tool at "kernel source/tools/vm/page-types.c."
+
+
+7. After Kernel 4.2, need CAP_SYS_ADMIN capability (basically root) to read "pagemap."
