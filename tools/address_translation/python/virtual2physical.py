@@ -82,13 +82,15 @@ def virtual2physical(pid, vaddr, pagesize, cache_pagemap):
     pagepresent = phypagedesp_i >> 63
     pageshift = 0
     pagesize2 = pagesize
-    while((pagesize2 & 0x1) == 0x0):
-        pageshift++;
-        pagesize2 >> 4
-    print "pageshift is", pageshift
+    while((pagesize2 & 0b1) == 0x0):
+        pageshift += 1
+        pagesize2 = pagesize2 >> 1
 
     phyaddr = (phypageaddr << pageshift) | inpageaddr
 
+    if debug is True:
+        print "pagemap raw reading is", hex(phypagedesp_i)
+    	print "page shift is", pageshift
     if debug is True:
         print "Whether the page is present in memory is ", pagepresent
     if debug is True:

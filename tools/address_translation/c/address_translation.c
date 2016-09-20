@@ -41,6 +41,7 @@ int virtual_to_physical(int pid,
 	struct virtualpage_info *vpage_info;
 	static struct virtualpage_info vpage2 = {0}; /* this acts as a cache */
 	ssize_t bytes_read = 0;
+	unsigned long long page_size2;
 
 	ctx_dprintf(debug, "Translating virtual address: 0x%llx for process %d "
 		    "with page size %llu\n", vaddr, pid, page_size);
@@ -97,10 +98,18 @@ int virtual_to_physical(int pid,
 	 * Bits 0-54  page frame number (PFN) if present
 	 * Bits 0-4   swap type if swapped
 	 * Bits 5-54  swap offset if swapped
-	 * Bits 55-60 page shift (page size = 1&lt;&lt;page shift)
-	 * Bit  61    reserved for future use
+	 * Bit  55    pte is soft-dirty (see Documentation/vm/soft-dirty.txt)
+	 * Bit  56    page exclusively mapped (since 4.2)
+	 * Bits 57-60 zero
+	 * Bit  61    page is file-page or shared-anon (since 3.5)
 	 * Bit  62    page swapped
 	 * Bit  63    page present
+
+	 * Note that originally, bits 55-60 are page shift (i.e., page size)
+	 * However after kernel 3.11, these bits are used for other purposes.
+	 * For all machines I have, in /proc/[pid]/pagemap, page size is fixed t
+	 * to be 4KB (even for 2MB huge pages). There seems to be no need to
+	 * keep the page shift bits.
 	 */
 
 	/* This is the actually offset for this page is vpageindex * 8, 
@@ -134,6 +143,7 @@ int virtual_to_physical(int pid,
 	/* process virtual page info */
 	vpage_info->physical_addr = 
 		vpage_info->encoded_page_info & 0x7fffffffffffff;
+	
 	vpage_info->page_shift = 
 		(vpage_info->encoded_page_info >> 55) & 0x3f;
 	vpage_info->page_size = 
@@ -146,6 +156,14 @@ int virtual_to_physical(int pid,
 		(vpage_info->encoded_page_info >> 5) & 0x3ffffffffffff;
 	vpage_info->page_swapped = 
 		(vpage_info->encoded_page_info >> 62) & 0x1;
+	/* get page shift from the page size */
+	page_size2 = page_size;
+	vpage_info->page_shift = 0;
+	while((page_size2 & 0b1) == 0){
+		vpage_info->page_shift++;
+		page_size2 = page_size2 >> 1;
+	}
+	
 	vpage_info->virtual_addr = vaddr >> vpage_info->page_shift;
 	*paddr = (vpage_info->physical_addr << vpage_info->page_shift) | 
 		within_page_addr;

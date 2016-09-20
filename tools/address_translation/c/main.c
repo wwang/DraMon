@@ -51,7 +51,8 @@ int print_help()
 		"\t the address to translation, must in hex format, "
 		"max 64bits",
 		"  -s pagesize, --pagesize=pagesize",
-		"\t OS page szie in B, KB or GB, if you know it;"
+		"\t OS page szie in B, KB or GB, if you know it; it should be "
+		"4KB in most cases, even for hugepages; "
 		"if not specified, default OS pagesize is used",
 		"  -d --debug",
 		"\t enable debug output",
